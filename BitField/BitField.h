@@ -44,7 +44,7 @@ private:
     BitFieldType* data_;
     size_t getIndex(size_t pos) const {
         if (pos >= bitCount_) throw std::out_of_range("Pos is out of range");
-        return pos >> sizeof(BitFieldType);
+        return pos / BITS_PER_BLOCK;
     }
     BitFieldType getMask(size_t pos) const noexcept {
         return static_cast<BitFieldType>(1) << (pos % BITS_PER_BLOCK);

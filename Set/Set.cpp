@@ -8,8 +8,7 @@ Set Set::operator-() const {
 
 Set& Set::operator=(const Set& other) {
     if (this != &other) {
-        Set temp(other);
-        swap(*this, temp);
+        bitfield_ = other.bitfield_;
     }
     return (*this);
 }

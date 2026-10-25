@@ -19,17 +19,12 @@ public:
         return bitfield_.getBitCount();
     }
 
-    friend void swap(Set& first, Set& second) {
-        using std::swap;
-        swap(first.bitfield_, second.bitfield_);
-    }
-
     void insert(int elem) {
-        if (elem <= 1 || elem > maxPower()) throw std::out_of_range("Elem is out of range!");
+        if (elem < 1 || elem > maxPower()) throw std::out_of_range("Elem is out of range!");
         bitfield_.setBit(elem - 1);
     }
     void erase(int elem) {
-        if (elem <= 1 || elem > maxPower()) throw std::out_of_range("Elem is out of range!");
+        if (elem < 1 || elem > maxPower()) throw std::out_of_range("Elem is out of range!");
         bitfield_.resetBit(elem - 1);
     }
 
@@ -38,11 +33,11 @@ public:
     }
 
     Set& operator+=(int elem) {
-        insert(elem - 1);
+        insert(elem);
         return (*this);
     }
     Set& operator-=(int elem) {
-        erase(elem - 1);
+        erase(elem);
         return (*this);
     }
     Set operator+(int elem) const {

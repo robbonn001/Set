@@ -1,8 +1,13 @@
 #include "pch.h"
 #include "BitField.h"
+#include "Set.h"
 #include <iostream>
 #include <stdexcept>
 #include <utility>
+
+//  
+// Тесты для класса BitField
+//
 
 TEST(TestBitField, TestConstructorZeroPower) {
     BitField bitfield;
@@ -243,4 +248,201 @@ TEST(TestBitField, TestOperatorsBoundaryBits) {
     EXPECT_TRUE(c.getBit(31));
     EXPECT_TRUE(c.getBit(32));
     EXPECT_TRUE(c.getBit(63));
+}
+
+//  
+// Тесты для класса Set
+//
+
+// Тест конструкторов
+TEST(TestSet, TestConstructors) {
+    Set set1(32);
+    EXPECT_EQ(set1.maxPower(), 32);
+
+    Set set2(set1);
+    EXPECT_EQ(set2.maxPower(), 32);
+
+    BitField bf(64);
+    Set set3(bf);
+    EXPECT_EQ(set3.maxPower(), 64);
+}
+
+// Тест insert и erase
+TEST(TestSet, TestInsertAndErase) {
+    Set set(32);
+
+    set.insert(1);
+    set.insert(10);
+    set.insert(32);
+
+    BitField bf = set;
+    EXPECT_TRUE(bf.getBit(0));
+    EXPECT_TRUE(bf.getBit(9));
+    EXPECT_TRUE(bf.getBit(31));
+
+    set.erase(10);
+    bf = set;
+    EXPECT_FALSE(bf.getBit(9));
+    EXPECT_TRUE(bf.getBit(0));
+}
+
+// Тест исключений при insert/erase
+TEST(TestSet, TestInsertEraseException) {
+    Set set(32);
+
+    EXPECT_THROW(set.insert(0), std::out_of_range);
+    EXPECT_THROW(set.insert(33), std::out_of_range);
+    EXPECT_THROW(set.erase(0), std::out_of_range);
+    EXPECT_THROW(set.erase(33), std::out_of_range);
+}
+
+// Тест операторов с int
+TEST(TestSet, TestOperatorsWithInt) {
+    Set set(32);
+
+    set += 5;
+    set += 10;
+
+    BitField bf = set;
+    EXPECT_TRUE(bf.getBit(4));
+    EXPECT_TRUE(bf.getBit(9));
+
+    set -= 5;
+    bf = set;
+    EXPECT_FALSE(bf.getBit(4));
+    EXPECT_TRUE(bf.getBit(9));
+
+    Set set2 = set + 15;
+    bf = set2;
+    EXPECT_TRUE(bf.getBit(14));
+    EXPECT_TRUE(bf.getBit(9));  // исходный set не изменился
+
+    Set set3 = set - 10;
+    bf = set3;
+    EXPECT_FALSE(bf.getBit(9));
+}
+
+// Тест операторов с Set
+TEST(TestSet, TestOperatorsWithSet) {
+    Set set1(32);
+    set1.insert(1);
+    set1.insert(5);
+    set1.insert(10);
+
+    Set set2(32);
+    set2.insert(5);
+    set2.insert(15);
+
+    // Объединение (+)
+    Set unionSet = set1 + set2;
+    BitField bf = unionSet;
+    EXPECT_TRUE(bf.getBit(0));   // из set1
+    EXPECT_TRUE(bf.getBit(4));   // общий
+    EXPECT_TRUE(bf.getBit(9));   // из set1
+    EXPECT_TRUE(bf.getBit(14));  // из set2
+
+    // Пересечение (*)
+    Set intersectSet = set1 * set2;
+    bf = intersectSet;
+    EXPECT_FALSE(bf.getBit(0));
+    EXPECT_TRUE(bf.getBit(4));   // только общий
+    EXPECT_FALSE(bf.getBit(9));
+    EXPECT_FALSE(bf.getBit(14));
+
+    // Разность (-)
+    Set diffSet = set1 - set2;
+    bf = diffSet;
+    EXPECT_TRUE(bf.getBit(0));
+    EXPECT_FALSE(bf.getBit(4));  // удален
+    EXPECT_TRUE(bf.getBit(9));
+    EXPECT_FALSE(bf.getBit(14));
+}
+
+// Тест операторов присваивания с Set
+TEST(TestSet, TestAssignmentOperatorsWithSet) {
+    Set set1(32);
+    set1.insert(1);
+    set1.insert(5);
+
+    Set set2(32);
+    set2.insert(5);
+    set2.insert(10);
+
+    set1 += set2;
+    BitField bf = set1;
+    EXPECT_TRUE(bf.getBit(0));
+    EXPECT_TRUE(bf.getBit(4));
+    EXPECT_TRUE(bf.getBit(9));
+
+    Set set3(32);
+    set3.insert(1);
+    set3.insert(5);
+    set3.insert(10);
+
+    set3 *= set2;
+    bf = set3;
+    EXPECT_FALSE(bf.getBit(0));
+    EXPECT_TRUE(bf.getBit(4));
+    EXPECT_TRUE(bf.getBit(9));
+
+    Set set4(32);
+    set4.insert(1);
+    set4.insert(5);
+    set4.insert(10);
+
+    set4 -= set2;
+    bf = set4;
+    EXPECT_TRUE(bf.getBit(0));
+    EXPECT_FALSE(bf.getBit(4));
+    EXPECT_FALSE(bf.getBit(9));
+}
+
+// Тест унарного минуса (дополнение)
+TEST(TestSet, TestUnaryMinus) {
+    Set set(32);
+    set.insert(1);
+    set.insert(10);
+
+    Set complement = -set;
+    BitField bf = complement;
+
+    EXPECT_FALSE(bf.getBit(0));
+    EXPECT_TRUE(bf.getBit(1));
+    EXPECT_TRUE(bf.getBit(5));
+    EXPECT_FALSE(bf.getBit(9));
+    EXPECT_TRUE(bf.getBit(31));
+}
+
+// Тест копирования и перемещения
+TEST(TestSet, TestCopyAndMove) {
+    Set set1(32);
+    set1.insert(5);
+
+    Set set2 = set1;
+    BitField bf = set2;
+    EXPECT_TRUE(bf.getBit(4));
+
+    set2.insert(10);
+    bf = set1;
+    EXPECT_FALSE(bf.getBit(9));  // set1 не изменился
+
+    Set set3 = std::move(set1);
+    bf = set3;
+    EXPECT_TRUE(bf.getBit(4));
+}
+
+// Тест граничных значений
+TEST(TestSet, TestBoundaryValues) {
+    Set set(64);
+
+    set.insert(1);
+    set.insert(32);
+    set.insert(33);
+    set.insert(64);
+
+    BitField bf = set;
+    EXPECT_TRUE(bf.getBit(0));
+    EXPECT_TRUE(bf.getBit(31));
+    EXPECT_TRUE(bf.getBit(32));
+    EXPECT_TRUE(bf.getBit(63));
 }
