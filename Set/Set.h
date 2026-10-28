@@ -2,6 +2,7 @@
 #include "BitField.h"
 #include <stdexcept>
 #include <utility>
+#include <iostream>
 
 class Set
 {
@@ -17,6 +18,9 @@ public:
 
     size_t maxPower() const noexcept {
         return bitfield_.getBitCount();
+    }
+    bool isMember(int elem) const {
+        return bitfield_.getBit(elem - 1);
     }
 
     void insert(int elem) {
@@ -77,3 +81,5 @@ public:
     Set& operator=(Set&& other) noexcept;
 };
 
+std::istream& operator>>(std::istream& is, Set& other);
+std::ostream& operator<<(std::ostream& os, const Set& other);

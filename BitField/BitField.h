@@ -1,5 +1,6 @@
 #pragma once
 #include <stdexcept>
+#include <iostream>
 
 class BitField {
 
@@ -50,3 +51,6 @@ private:
         return static_cast<BitFieldType>(1) << (pos % BITS_PER_BLOCK);
     }
 };
+
+std::istream& operator>>(std::istream& is, BitField& other);
+std::ostream& operator<<(std::ostream& os, const BitField& other);

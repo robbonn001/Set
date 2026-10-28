@@ -79,3 +79,21 @@ BitField BitField::operator~() const {
     }
     return temp;
 }
+
+std::istream& operator>>(std::istream& is, BitField& other) {
+    char temp = '0';
+    for (size_t i = 0;i < other.getBitCount() && (temp != '\n');++i) {
+        if (is.get(temp) && temp == '1') {
+            other.setBit(i);
+        }
+    }
+    return is;
+}
+
+std::ostream& operator<<(std::ostream& os, const BitField& other) {
+    for (size_t i = 0;i < other.getBitCount();++i) {
+        os << other.getBit(i);
+    }
+    os << '\n';
+    return os;
+}
