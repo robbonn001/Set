@@ -1,99 +1,121 @@
 #include "BitField.h"
 
-BitField::BitField(const BitField& other) : bitCount_(other.bitCount_), data_(new BitFieldType[(other.bitCount_ + BITS_PER_BLOCK - 1) / BITS_PER_BLOCK]) {
-    for (size_t i = 0;i < getDataSize();++i) data_[i] = other.data_[i];
+BitField::BitField(const BitField& other)
+    : bitCount_(other.bitCount_),
+      data_(new BitFieldType[(other.bitCount_ + BITS_PER_BLOCK - 1) /
+                             BITS_PER_BLOCK]) {
+  for (size_t i = 0; i < getDataSize(); ++i) data_[i] = other.data_[i];
 }
 
 void BitField::setBit(size_t pos) {
-    size_t index = getIndex(pos);
-    BitFieldType mask = getMask(pos);
-    data_[index] |= mask;
+  size_t index = getIndex(pos);
+  BitFieldType mask = getMask(pos);
+  data_[index] |= mask;
 }
 
 void BitField::resetBit(size_t pos) {
-    size_t index = getIndex(pos);
-    BitFieldType mask = getMask(pos);
-    data_[index] &= ~mask;
+  size_t index = getIndex(pos);
+  BitFieldType mask = getMask(pos);
+  data_[index] &= ~mask;
 }
 
 bool BitField::getBit(size_t pos) const {
-    size_t index = getIndex(pos);
-    BitFieldType mask = getMask(pos);
-    return (data_[index] & mask) != 0;
+  size_t index = getIndex(pos);
+  BitFieldType mask = getMask(pos);
+  return (data_[index] & mask) != 0;
 }
 
 BitField& BitField::operator=(const BitField& other) {
-    if (this != &other) {
-        BitField temp(other);
-        swap(*this, temp);
-    }
-    return (*this);
+  if (this != &other) {
+    BitField temp(other);
+    swap(*this, temp);
+  }
+  return (*this);
 }
 
 BitField& BitField::operator=(BitField&& other) noexcept {
-    if (this != &other) {
-        bitCount_ = other.bitCount_;
-        data_ = other.data_;
-        other.data_ = nullptr;
-        other.bitCount_ = 0;
-    }
-    return (*this);
+  if (this != &other) {
+    BitField temp(std::move(other));
+    swap(*this, temp);
+  }
+  return (*this);
 }
 
 BitField& BitField::operator|=(const BitField& other) {
-    if (this != &other) {
-        if (getBitCount() != other.getBitCount()) throw std::logic_error("Different powers");
-        for (size_t i = 0;i < getDataSize();i++) {
-            data_[i] |= other.data_[i];
-        }
+  if (this != &other) {
+    if (getBitCount() != other.getBitCount())
+      throw std::logic_error("Different powers");
+    for (size_t i = 0; i < getDataSize(); i++) {
+      data_[i] |= other.data_[i];
     }
-    return (*this);
+  }
+  return (*this);
 }
 
 BitField& BitField::operator&=(const BitField& other) {
-    if (this != &other) {
-        if (getBitCount() != other.getBitCount()) throw std::logic_error("Different powers");
-        for (size_t i = 0;i < getDataSize();i++) {
-            data_[i] &= other.data_[i];
-        }
+  if (this != &other) {
+    if (getBitCount() != other.getBitCount())
+      throw std::logic_error("Different powers");
+    for (size_t i = 0; i < getDataSize(); i++) {
+      data_[i] &= other.data_[i];
     }
-    return (*this);
+  }
+  return (*this);
 }
 
 BitField BitField::operator|(const BitField& other) const {
-    if (getBitCount() != other.getBitCount()) throw std::logic_error("Different powers");
-    BitField temp(*this);
-    return temp |= other;
+  if (getBitCount() != other.getBitCount())
+    throw std::logic_error("Different powers");
+  BitField temp(*this);
+  return temp |= other;
 }
 
 BitField BitField::operator&(const BitField& other) const {
-    if (getBitCount() != other.getBitCount()) throw std::logic_error("Different powers");
-    BitField temp(*this);
-    return temp &= other;
+  if (getBitCount() != other.getBitCount())
+    throw std::logic_error("Different powers");
+  BitField temp(*this);
+  return temp &= other;
 }
 
 BitField BitField::operator~() const {
-    BitField temp(*this);
-    for (size_t i = 0;i < getDataSize();i++) {
-        temp.data_[i] = ~temp.data_[i];
+  BitField temp(*this);
+  for (size_t i = 0; i < getDataSize(); i++) {
+    temp.data_[i] = ~temp.data_[i];
+  }
+  return temp;
+}
+
+bool BitField::operator==(const BitField& other) const noexcept {
+  size_t bitCount = getBitCount();
+  if (bitCount != other.getBitCount()) {
+    return false;
+  }
+  for (size_t i = 0; i < bitCount;++i){
+    if (getBit(i) != other.getBit(i)) {
+        return false;
     }
-    return temp;
+  }
+  return true;
+}
+
+bool BitField::operator!=(const BitField& other) const noexcept {
+    return !(*this == other);
 }
 
 std::istream& operator>>(std::istream& is, BitField& other) {
-    char temp = '0';
-    for (size_t i = 0;i < other.getBitCount() && (temp != '\n');++i) {
-        if (is.get(temp) && temp == '1') {
-            other.setBit(i);
-        }
+  char temp = '0';
+  for (size_t i = 0; i < other.getBitCount() && (temp != '\n'); ++i) {
+    if (is.get(temp) && temp == '1') {
+      other.setBit(i);
     }
-    return is;
+  }
+  return is;
 }
 
 std::ostream& operator<<(std::ostream& os, const BitField& other) {
-    for (size_t i = 0;i < other.getBitCount();++i) {
-        os << other.getBit(i);
-    }
-    os << '\n';
-    return os;
+  for (size_t i = 0; i < other.getBitCount(); ++i) {
+    os << other.getBit(i);
+  }
+  os << '\n';
+  return os;
 }

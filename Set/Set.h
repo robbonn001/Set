@@ -79,6 +79,9 @@ public:
     Set operator-() const;
     Set& operator=(const Set& other);
     Set& operator=(Set&& other) noexcept;
+
+    bool operator==(const Set& other) const noexcept;
+    bool operator!=(const Set& other) const noexcept;
 };
 
 std::istream& operator>>(std::istream& is, Set& other);

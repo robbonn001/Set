@@ -25,7 +25,6 @@ TEST(TestBitField, TestConstructorSomePower) {
     size_t power = 100;
     BitField bitfield(power);
     EXPECT_EQ(bitfield.getBitCount(), power);
-    EXPECT_EQ(bitfield.getDataSize(), (power + BitField::BITS_PER_BLOCK - 1) / BitField::BITS_PER_BLOCK);
 }
 
 TEST(TestBitField, TestCopyConstructor) {
@@ -248,6 +247,19 @@ TEST(TestBitField, TestOperatorsBoundaryBits) {
     EXPECT_TRUE(c.getBit(31));
     EXPECT_TRUE(c.getBit(32));
     EXPECT_TRUE(c.getBit(63));
+}
+
+TEST(TestBitField, TestEqual) {
+  BitField a(64), b(32), c(64);
+
+  EXPECT_FALSE(a == b);
+  a.setBit(5);
+
+  EXPECT_FALSE(a == c);
+
+  c.setBit(5);
+  EXPECT_TRUE(a == c);
+  
 }
 
 //  

@@ -9,9 +9,8 @@ public:
     static constexpr size_t BITS_PER_BLOCK = sizeof(BitFieldType) * 8;
     BitField(BitFieldType power = 0) : bitCount_(power), data_(new BitFieldType[(bitCount_ + BITS_PER_BLOCK - 1) / BITS_PER_BLOCK]()) {}
     BitField(const BitField& other);
-    BitField(BitField&& other) noexcept : bitCount_(other.bitCount_), data_(other.data_) {
-        other.data_ = nullptr;
-        other.bitCount_ = 0;
+    BitField(BitField&& other) noexcept : bitCount_(0), data_(nullptr) {
+      swap(*this, other);
     }
     ~BitField() {
         if (data_) {
@@ -33,6 +32,9 @@ public:
     BitField operator|(const BitField& other) const;
     BitField operator&(const BitField& other) const;
     BitField operator~() const;
+
+    bool operator==(const BitField& other) const noexcept;
+    bool operator!=(const BitField& other) const noexcept;
 
     friend void swap(BitField& first, BitField& second) {
         using std::swap;

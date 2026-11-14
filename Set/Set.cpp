@@ -20,6 +20,14 @@ Set& Set::operator=(Set&& other) noexcept {
     return (*this);
 }
 
+bool Set::operator==(const Set& other) const noexcept { 
+    return bitfield_ == other.bitfield_;
+}
+
+bool Set::operator!=(const Set& other) const noexcept {
+  return bitfield_ != other.bitfield_;
+}
+
 std::istream& operator>>(std::istream& is, Set& other) {
     char symbol;
     int num = 0;
